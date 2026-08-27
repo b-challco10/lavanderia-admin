@@ -3,9 +3,6 @@ import HistorialClient from "@/components/historial/HistorialClient";
 import ExportExcelButtons from "@/components/historial/ExportExcelButtons";
 import { prisma } from "@/lib/prisma";
 
-// Forzar a Next.js a renderizar esta página dinámicamente en el servidor
-export const dynamic = "force-dynamic";
-
 export default async function HistorialPage() {
   const [pedidos, gastos] = await Promise.all([
     prisma.pedido.findMany({
@@ -79,59 +76,57 @@ export default async function HistorialPage() {
         </div>
 
         <div className="space-y-5">
-          <div
-            className="
-            rounded-2xl
-            border
-            border-slate-200
-            bg-white
-            p-5
-            shadow-sm
-          "
-          >
-            <div
-              className="
-              flex
-              flex-col
-              gap-4
-              lg:flex-row
-              lg:items-center
-              lg:justify-between
-            "
-            >
-              <div>
-                <h2
-                  className="
-                  font-semibold
-                  text-slate-800
-                "
-                >
-                  Exportar información
-                </h2>
 
-                <p
-                  className="
-                  mt-1
-                  text-sm
-                  text-slate-500
-                "
-                >
-                  Descarga tus registros en formato Excel.
-                </p>
-              </div>
+  <div className="
+    rounded-2xl
+    border
+    border-slate-200
+    bg-white
+    p-5
+    shadow-sm
+  ">
 
-              <ExportExcelButtons
-                pedidos={pedidosData}
-                gastos={gastosData}
-              />
-            </div>
-          </div>
+    <div className="
+      flex
+      flex-col
+      gap-4
+      lg:flex-row
+      lg:items-center
+      lg:justify-between
+    ">
 
-          <HistorialClient
-            pedidos={pedidosData}
-            gastos={gastosData}
-          />
-        </div>
+      <div>
+        <h2 className="
+          font-semibold
+          text-slate-800
+        ">
+          Exportar información
+        </h2>
+
+        <p className="
+          mt-1
+          text-sm
+          text-slate-500
+        ">
+          Descarga tus registros en formato Excel.
+        </p>
+      </div>
+
+      <ExportExcelButtons
+        pedidos={pedidosData}
+        gastos={gastosData}
+      />
+
+    </div>
+
+  </div>
+
+  <HistorialClient
+    pedidos={pedidosData}
+    gastos={gastosData}
+  />
+
+</div>
       </div>
     </AppShell>
   );
