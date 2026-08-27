@@ -13,11 +13,8 @@ const categoriasValidas: CategoriaGasto[] = [
 
 function validarGasto(formData: FormData) {
   const concepto = String(formData.get("concepto") ?? "").trim();
-
   const monto = Number(formData.get("monto") ?? 0);
-
   const categoria = String(formData.get("categoria") ?? "") as CategoriaGasto;
-
   const fecha = String(formData.get("fecha") ?? "");
 
   if (!concepto) {
@@ -49,9 +46,8 @@ export async function crearGasto(formData: FormData) {
     data: datos,
   });
 
-  revalidatePath("/gastos");
-  revalidatePath("/dashboard");
-  revalidatePath("/historial");
+  // Revalida todo el sitio de un solo golpe (mucho más rápido)
+  revalidatePath("/", "layout");
 
   return {
     success: true,
@@ -63,9 +59,7 @@ export async function actualizarGasto(id: string, formData: FormData) {
   const datos = validarGasto(formData);
 
   const gastoExistente = await prisma.gasto.findUnique({
-    where: {
-      id,
-    },
+    where: { id },
   });
 
   if (!gastoExistente) {
@@ -73,15 +67,11 @@ export async function actualizarGasto(id: string, formData: FormData) {
   }
 
   const gasto = await prisma.gasto.update({
-    where: {
-      id,
-    },
+    where: { id },
     data: datos,
   });
 
-  revalidatePath("/gastos");
-  revalidatePath("/dashboard");
-  revalidatePath("/historial");
+  revalidatePath("/", "layout");
 
   return {
     success: true,
@@ -91,9 +81,7 @@ export async function actualizarGasto(id: string, formData: FormData) {
 
 export async function eliminarGasto(id: string) {
   const gastoExistente = await prisma.gasto.findUnique({
-    where: {
-      id,
-    },
+    where: { id },
   });
 
   if (!gastoExistente) {
@@ -101,14 +89,10 @@ export async function eliminarGasto(id: string) {
   }
 
   await prisma.gasto.delete({
-    where: {
-      id,
-    },
+    where: { id },
   });
 
-  revalidatePath("/gastos");
-  revalidatePath("/dashboard");
-  revalidatePath("/historial");
+  revalidatePath("/", "layout");
 
   return {
     success: true,

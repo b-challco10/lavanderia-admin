@@ -2,17 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { EstadoPago, EstadoServicio } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+
 export async function crearPedido(formData: FormData) {
   const nombreCliente = String(formData.get("nombreCliente") ?? "").trim();
-
   const telefonoCliente = String(formData.get("telefonoCliente") ?? "").trim();
-
   const detallePrendas = String(formData.get("detallePrendas") ?? "").trim();
-
   const montoTotal = Number(formData.get("montoTotal") ?? 0);
-
   const montoAdelanto = Number(formData.get("montoAdelanto") ?? 0);
-
   const estadoPago = String(
     formData.get("estadoPago") ?? "PENDIENTE",
   ) as EstadoPago;
@@ -48,41 +45,38 @@ export async function crearPedido(formData: FormData) {
     },
   });
 
+  revalidatePath("/", "layout");
+
   return {
     success: true,
     id: pedido.id,
   };
 }
+
 export async function actualizarEstadoPedido(
   id: string,
   estadoServicio: EstadoServicio,
 ) {
   const pedido = await prisma.pedido.update({
-    where: {
-      id,
-    },
-    data: {
-      estadoServicio,
-    },
+    where: { id },
+    data: { estadoServicio },
   });
+
+  revalidatePath("/", "layout");
 
   return {
     success: true,
     estadoServicio: pedido.estadoServicio,
   };
 }
-import { revalidatePath } from "next/cache";
+
 export async function eliminarPedido(id: string) {
   try {
     await prisma.pedido.delete({
-      where: {
-        id,
-      },
+      where: { id },
     });
 
-    revalidatePath("/pedidos");
-    revalidatePath("/dashboard");
-    revalidatePath("/historial");
+    revalidatePath("/", "layout");
 
     return {
       success: true,
@@ -96,6 +90,7 @@ export async function eliminarPedido(id: string) {
     };
   }
 }
+
 export async function editarPedido(data: {
   id: string;
   nombreCliente: string;
@@ -112,30 +107,19 @@ export async function editarPedido(data: {
 }) {
   try {
     await prisma.pedido.update({
-      where: {
-        id: data.id,
-      },
-
+      where: { id: data.id },
       data: {
         nombreCliente: data.nombreCliente.trim(),
-
         telefonoCliente: data.telefonoCliente.trim() || null,
-
         detallePrendas: data.detallePrendas.trim(),
-
         montoTotal: data.montoTotal,
-
         montoAdelanto: data.montoAdelanto,
-
         estadoPago: data.estadoPago,
-
         estadoServicio: data.estadoServicio,
       },
     });
 
-    revalidatePath("/pedidos");
-    revalidatePath("/dashboard");
-    revalidatePath("/historial");
+    revalidatePath("/", "layout");
 
     return {
       success: true,
