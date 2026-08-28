@@ -46,8 +46,9 @@ export async function crearGasto(formData: FormData) {
     data: datos,
   });
 
-  // Revalida todo el sitio de un solo golpe (mucho más rápido)
-  revalidatePath("/", "layout");
+  revalidatePath("/gastos");
+  revalidatePath("/dashboard");
+  revalidatePath("/historial");
 
   return {
     success: true,

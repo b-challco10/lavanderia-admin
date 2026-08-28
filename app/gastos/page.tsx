@@ -2,7 +2,7 @@ import AppShell from "@/components/layout/AppShell";
 import GastoForm from "@/components/gastos/GastoForm";
 import GastoList from "@/components/gastos/GastoList";
 import { prisma } from "@/lib/prisma";
-
+export const dynamic = "force-dynamic";
 export default async function GastosPage() {
   const gastos = await prisma.gasto.findMany({
     orderBy: {
