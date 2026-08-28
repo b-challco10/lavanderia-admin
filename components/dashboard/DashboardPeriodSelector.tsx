@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 
 const periodos = [
   {
@@ -19,8 +20,9 @@ const periodos = [
 
 export default function DashboardPeriodSelector() {
   const router = useRouter();
-
   const searchParams = useSearchParams();
+
+  const [isPending, startTransition] = useTransition();
 
   const periodo = searchParams.get("periodo") ?? "MES";
 
@@ -29,27 +31,30 @@ export default function DashboardPeriodSelector() {
 
     params.set("periodo", nuevoPeriodo);
 
-    router.push(`/dashboard?${params.toString()}`);
+    startTransition(() => {
+      router.push(`/dashboard?${params.toString()}`);
+    });
   }
 
   return (
     <div
       className="
-      flex
-      w-full
-      rounded-xl
-      border
-      border-slate-200
-      bg-white
-      p-1
-      sm:w-auto
-    "
+        flex
+        w-full
+        rounded-xl
+        border
+        border-slate-200
+        bg-white
+        p-1
+        sm:w-auto
+      "
     >
       {periodos.map((item) => (
         <button
           key={item.value}
           type="button"
           onClick={() => cambiarPeriodo(item.value)}
+          disabled={isPending}
           className={`
             flex-1
             rounded-lg
@@ -59,6 +64,7 @@ export default function DashboardPeriodSelector() {
             font-semibold
             transition
             sm:flex-none
+            disabled:opacity-60
             ${
               periodo === item.value
                 ? "bg-blue-600 text-white"
@@ -66,7 +72,9 @@ export default function DashboardPeriodSelector() {
             }
           `}
         >
-          {item.label}
+          {isPending && periodo !== item.value
+            ? "Cargando..."
+            : item.label}
         </button>
       ))}
     </div>

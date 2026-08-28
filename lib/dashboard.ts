@@ -4,6 +4,7 @@ export type PeriodoDashboard = "HOY" | "SEMANA" | "MES";
 
 function obtenerRango(periodo: PeriodoDashboard) {
   const ahora = new Date();
+
   const inicio = new Date(ahora);
 
   if (periodo === "HOY") {
@@ -12,6 +13,7 @@ function obtenerRango(periodo: PeriodoDashboard) {
 
   if (periodo === "SEMANA") {
     const dia = inicio.getDay();
+
     const diferencia = dia === 0 ? 6 : dia - 1;
 
     inicio.setDate(inicio.getDate() - diferencia);
@@ -21,6 +23,7 @@ function obtenerRango(periodo: PeriodoDashboard) {
 
   if (periodo === "MES") {
     inicio.setDate(1);
+
     inicio.setHours(0, 0, 0, 0);
   }
 
@@ -47,7 +50,7 @@ export async function obtenerDashboard(periodo: PeriodoDashboard) {
     },
   };
 
-  const [ingresos, gastos, pedidosPendientes, pedidosListos] =
+  const [ingresos, gastos, pedidosPorEstado] =
     await Promise.all([
       prisma.pedido.aggregate({
         _sum: {
@@ -63,34 +66,50 @@ export async function obtenerDashboard(periodo: PeriodoDashboard) {
         where: rangoGasto,
       }),
 
-      prisma.pedido.count({
-        where: {
-          ...rangoCreacion,
-          estadoServicio: {
-            in: ["RECIBIDO", "EN_PROCESO"],
-          },
-        },
-      }),
+      prisma.pedido.groupBy({
+        by: ["estadoServicio"],
 
-      prisma.pedido.count({
-        where: {
-          ...rangoCreacion,
-          estadoServicio: "LISTO_PARA_ENTREGAR",
+        _count: {
+          id: true,
         },
+
+        where: rangoCreacion,
       }),
     ]);
 
-  const totalIngresos = Number(ingresos._sum.montoTotal ?? 0);
+  const totalIngresos = Number(
+    ingresos._sum.montoTotal ?? 0,
+  );
 
-  const totalGastos = Number(gastos._sum.monto ?? 0);
+  const totalGastos = Number(
+    gastos._sum.monto ?? 0,
+  );
 
-  const gananciaNeta = totalIngresos - totalGastos;
+  const pendientes = pedidosPorEstado
+    .filter(
+      (pedido) =>
+        pedido.estadoServicio === "RECIBIDO" ||
+        pedido.estadoServicio === "EN_PROCESO",
+    )
+    .reduce(
+      (total, pedido) =>
+        total + pedido._count.id,
+      0,
+    );
+
+  const listos =
+    pedidosPorEstado.find(
+      (pedido) =>
+        pedido.estadoServicio ===
+        "LISTO_PARA_ENTREGAR",
+    )?._count.id ?? 0;
 
   return {
     totalIngresos,
     totalGastos,
-    gananciaNeta,
-    pedidosPendientes,
-    pedidosListos,
+    gananciaNeta:
+      totalIngresos - totalGastos,
+    pedidosPendientes: pendientes,
+    pedidosListos: listos,
   };
 }
