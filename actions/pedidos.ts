@@ -45,7 +45,9 @@ export async function crearPedido(formData: FormData) {
     },
   });
 
-  revalidatePath("/", "layout");
+  revalidatePath("/pedidos");
+  revalidatePath("/dashboard");
+  revalidatePath("/historial");
 
   return {
     success: true,

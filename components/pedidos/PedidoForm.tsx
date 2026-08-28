@@ -23,7 +23,6 @@ export default function PedidoForm() {
       await crearPedido(formData);
 
       router.push("/pedidos");
-      router.refresh();
     } catch (error) {
       setError(
         error instanceof Error
