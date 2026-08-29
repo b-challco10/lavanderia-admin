@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function GastosPage() {
   const gastos = await prisma.gasto.findMany({
     orderBy: {
-      fecha: "desc",
+      createdAt: "desc",
     },
   });
 
