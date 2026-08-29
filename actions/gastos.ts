@@ -29,9 +29,12 @@ function validarGasto(formData: FormData) {
     throw new Error("La categoría seleccionada no es válida.");
   }
 
-  const fechaConvertida = fecha
-    ? fromZonedTime(`${fecha}T12:00:00`, ZONA_HORARIA)
-    : new Date();
+const fechaConvertida = fecha
+  ? fromZonedTime(
+      `${fecha}T12:00:00`,
+      ZONA_HORARIA,
+    )
+  : new Date();
   return {
     concepto,
     monto,
