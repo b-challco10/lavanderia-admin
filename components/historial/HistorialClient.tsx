@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, Package, Receipt } from "lucide-react";
 
 import PedidoStatusBadge from "@/components/pedidos/PedidoStatusBadge";
+import { formatearFechaHoraBolivia } from "@/lib/fecha";
 
 interface PedidoHistorial {
   id: string;
@@ -284,9 +285,7 @@ export default function HistorialClient({
                       text-slate-400
                     "
                     >
-                      <span>
-                        {new Date(pedido.createdAt).toLocaleDateString("es-BO")}
-                      </span>
+                      <span>{formatearFechaHoraBolivia(pedido.createdAt)}</span>
 
                       {pedido.telefonoCliente && (
                         <span>📞 {pedido.telefonoCliente}</span>
@@ -416,7 +415,7 @@ export default function HistorialClient({
                         text-slate-400
                       "
                       >
-                        {new Date(gasto.fecha).toLocaleDateString("es-BO")}
+                        {formatearFechaHoraBolivia(gasto.fecha)}
                       </span>
                     </div>
                   </div>

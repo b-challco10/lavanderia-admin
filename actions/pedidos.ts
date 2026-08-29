@@ -64,7 +64,9 @@ export async function actualizarEstadoPedido(
     data: { estadoServicio },
   });
 
-  revalidatePath("/", "layout");
+  revalidatePath("/gastos");
+  revalidatePath("/dashboard");
+  revalidatePath("/historial");
 
   return {
     success: true,
@@ -78,7 +80,9 @@ export async function eliminarPedido(id: string) {
       where: { id },
     });
 
-    revalidatePath("/", "layout");
+    revalidatePath("/pedidos");
+    revalidatePath("/dashboard");
+    revalidatePath("/historial");
 
     return {
       success: true,
@@ -121,7 +125,9 @@ export async function editarPedido(data: {
       },
     });
 
-    revalidatePath("/", "layout");
+    revalidatePath("/pedidos");
+    revalidatePath("/dashboard");
+    revalidatePath("/historial");
 
     return {
       success: true,

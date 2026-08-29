@@ -72,7 +72,9 @@ export async function actualizarGasto(id: string, formData: FormData) {
     data: datos,
   });
 
-  revalidatePath("/", "layout");
+  revalidatePath("/gastos");
+  revalidatePath("/dashboard");
+  revalidatePath("/historial");
 
   return {
     success: true,
@@ -93,7 +95,9 @@ export async function eliminarGasto(id: string) {
     where: { id },
   });
 
-  revalidatePath("/", "layout");
+  revalidatePath("/gastos");
+  revalidatePath("/dashboard");
+  revalidatePath("/historial");
 
   return {
     success: true,
