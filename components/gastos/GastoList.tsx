@@ -15,7 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import { eliminarGasto } from "@/actions/gastos";
-
+import { formatearFechaHoraBolivia } from "@/lib/fecha";
 interface Gasto {
   id: string;
   concepto: string;
@@ -190,7 +190,7 @@ export default function GastoList({ gastos }: { gastos: Gasto[] }) {
                       "
                     >
                       <span className="text-xs text-slate-400">
-                        {gasto.fecha.toLocaleDateString("es-BO")}
+                        {formatearFechaHoraBolivia(gasto.fecha)}
                       </span>
 
                       <span
