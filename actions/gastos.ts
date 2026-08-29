@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CategoriaGasto } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { fromZonedTime } from "date-fns-tz";
+
 const categoriasValidas: CategoriaGasto[] = [
   "INSUMOS",
   "SERVICIOS_BASICOS",
@@ -16,7 +16,7 @@ function validarGasto(formData: FormData) {
   const monto = Number(formData.get("monto") ?? 0);
   const categoria = String(formData.get("categoria") ?? "") as CategoriaGasto;
   const fecha = String(formData.get("fecha") ?? "");
-  const ZONA_HORARIA = "America/La_Paz";
+
   if (!concepto) {
     throw new Error("El concepto es obligatorio.");
   }
@@ -29,12 +29,8 @@ function validarGasto(formData: FormData) {
     throw new Error("La categoría seleccionada no es válida.");
   }
 
-const fechaConvertida = fecha
-  ? fromZonedTime(
-      `${fecha}T12:00:00`,
-      ZONA_HORARIA,
-    )
-  : new Date();
+  const fechaConvertida = fecha ? new Date(`${fecha}T12:00:00`) : new Date();
+
   return {
     concepto,
     monto,

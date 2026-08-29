@@ -1,55 +1,39 @@
 import { prisma } from "@/lib/prisma";
-import {
-  fromZonedTime,
-  toZonedTime,
-} from "date-fns-tz";
-import {
-  startOfDay,
-  startOfWeek,
-  startOfMonth,
-} from "date-fns";
 
 export type PeriodoDashboard = "HOY" | "SEMANA" | "MES";
 
-const ZONA_HORARIA = "America/La_Paz";
-
 function obtenerRango(periodo: PeriodoDashboard) {
-  const ahoraUTC = new Date();
+  const ahora = new Date();
 
-  // Convertimos la hora actual a la zona horaria de Bolivia
-  const ahoraBolivia = toZonedTime(
-    ahoraUTC,
-    ZONA_HORARIA,
-  );
-
-  let inicioBolivia: Date;
+  const inicio = new Date(ahora);
 
   if (periodo === "HOY") {
-    inicioBolivia = startOfDay(ahoraBolivia);
-  } else if (periodo === "SEMANA") {
-    inicioBolivia = startOfWeek(ahoraBolivia, {
-      weekStartsOn: 1,
-    });
-  } else {
-    inicioBolivia = startOfMonth(ahoraBolivia);
+    inicio.setHours(0, 0, 0, 0);
   }
 
-  // Convertimos los límites nuevamente a UTC
-  // para consultar correctamente PostgreSQL/Supabase
-  const inicio = fromZonedTime(
-    inicioBolivia,
-    ZONA_HORARIA,
-  );
+  if (periodo === "SEMANA") {
+    const dia = inicio.getDay();
+
+    const diferencia = dia === 0 ? 6 : dia - 1;
+
+    inicio.setDate(inicio.getDate() - diferencia);
+
+    inicio.setHours(0, 0, 0, 0);
+  }
+
+  if (periodo === "MES") {
+    inicio.setDate(1);
+
+    inicio.setHours(0, 0, 0, 0);
+  }
 
   return {
     inicio,
-    fin: ahoraUTC,
+    fin: ahora,
   };
 }
 
-export async function obtenerDashboard(
-  periodo: PeriodoDashboard,
-) {
+export async function obtenerDashboard(periodo: PeriodoDashboard) {
   const { inicio, fin } = obtenerRango(periodo);
 
   const rangoCreacion = {
@@ -84,9 +68,11 @@ export async function obtenerDashboard(
 
       prisma.pedido.groupBy({
         by: ["estadoServicio"],
+
         _count: {
           id: true,
         },
+
         where: rangoCreacion,
       }),
     ]);
@@ -99,7 +85,7 @@ export async function obtenerDashboard(
     gastos._sum.monto ?? 0,
   );
 
-  const pedidosPendientes = pedidosPorEstado
+  const pendientes = pedidosPorEstado
     .filter(
       (pedido) =>
         pedido.estadoServicio === "RECIBIDO" ||
@@ -111,7 +97,7 @@ export async function obtenerDashboard(
       0,
     );
 
-  const pedidosListos =
+  const listos =
     pedidosPorEstado.find(
       (pedido) =>
         pedido.estadoServicio ===
@@ -123,7 +109,7 @@ export async function obtenerDashboard(
     totalGastos,
     gananciaNeta:
       totalIngresos - totalGastos,
-    pedidosPendientes,
-    pedidosListos,
+    pedidosPendientes: pendientes,
+    pedidosListos: listos,
   };
 }
