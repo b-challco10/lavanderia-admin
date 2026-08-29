@@ -1,46 +1,35 @@
 import { prisma } from "@/lib/prisma";
 
-import { fromZonedTime, toZonedTime } from "date-fns-tz";
-
 export type PeriodoDashboard = "HOY" | "SEMANA" | "MES";
 
-const ZONA_HORARIA_BOLIVIA = "America/La_Paz";
-
 function obtenerRango(periodo: PeriodoDashboard) {
-  const ahoraUTC = new Date();
+  const ahora = new Date();
 
-  // Hora actual vista en Bolivia
-  const ahoraBolivia = toZonedTime(ahoraUTC, ZONA_HORARIA_BOLIVIA);
-
-  const inicioBolivia = new Date(ahoraBolivia);
+  const inicio = new Date(ahora);
 
   if (periodo === "HOY") {
-    inicioBolivia.setHours(0, 0, 0, 0);
+    inicio.setHours(0, 0, 0, 0);
   }
 
   if (periodo === "SEMANA") {
-    const dia = inicioBolivia.getDay();
+    const dia = inicio.getDay();
 
-    // Lunes = inicio de semana
     const diferencia = dia === 0 ? 6 : dia - 1;
 
-    inicioBolivia.setDate(inicioBolivia.getDate() - diferencia);
+    inicio.setDate(inicio.getDate() - diferencia);
 
-    inicioBolivia.setHours(0, 0, 0, 0);
+    inicio.setHours(0, 0, 0, 0);
   }
 
   if (periodo === "MES") {
-    inicioBolivia.setDate(1);
+    inicio.setDate(1);
 
-    inicioBolivia.setHours(0, 0, 0, 0);
+    inicio.setHours(0, 0, 0, 0);
   }
-
-  // Convertimos el rango Bolivia -> UTC
-  const inicio = fromZonedTime(inicioBolivia, ZONA_HORARIA_BOLIVIA);
 
   return {
     inicio,
-    fin: ahoraUTC,
+    fin: ahora,
   };
 }
 
@@ -61,33 +50,40 @@ export async function obtenerDashboard(periodo: PeriodoDashboard) {
     },
   };
 
-  const [ingresos, gastos, pedidosPorEstado] = await Promise.all([
-    prisma.pedido.aggregate({
-      _sum: {
-        montoTotal: true,
-      },
-      where: rangoCreacion,
-    }),
+  const [ingresos, gastos, pedidosPorEstado] =
+    await Promise.all([
+      prisma.pedido.aggregate({
+        _sum: {
+          montoTotal: true,
+        },
+        where: rangoCreacion,
+      }),
 
-    prisma.gasto.aggregate({
-      _sum: {
-        monto: true,
-      },
-      where: rangoGasto,
-    }),
+      prisma.gasto.aggregate({
+        _sum: {
+          monto: true,
+        },
+        where: rangoGasto,
+      }),
 
-    prisma.pedido.groupBy({
-      by: ["estadoServicio"],
-      _count: {
-        id: true,
-      },
-      where: rangoCreacion,
-    }),
-  ]);
+      prisma.pedido.groupBy({
+        by: ["estadoServicio"],
 
-  const totalIngresos = Number(ingresos._sum.montoTotal ?? 0);
+        _count: {
+          id: true,
+        },
 
-  const totalGastos = Number(gastos._sum.monto ?? 0);
+        where: rangoCreacion,
+      }),
+    ]);
+
+  const totalIngresos = Number(
+    ingresos._sum.montoTotal ?? 0,
+  );
+
+  const totalGastos = Number(
+    gastos._sum.monto ?? 0,
+  );
 
   const pendientes = pedidosPorEstado
     .filter(
@@ -95,17 +91,24 @@ export async function obtenerDashboard(periodo: PeriodoDashboard) {
         pedido.estadoServicio === "RECIBIDO" ||
         pedido.estadoServicio === "EN_PROCESO",
     )
-    .reduce((total, pedido) => total + pedido._count.id, 0);
+    .reduce(
+      (total, pedido) =>
+        total + pedido._count.id,
+      0,
+    );
 
   const listos =
     pedidosPorEstado.find(
-      (pedido) => pedido.estadoServicio === "LISTO_PARA_ENTREGAR",
+      (pedido) =>
+        pedido.estadoServicio ===
+        "LISTO_PARA_ENTREGAR",
     )?._count.id ?? 0;
 
   return {
     totalIngresos,
     totalGastos,
-    gananciaNeta: totalIngresos - totalGastos,
+    gananciaNeta:
+      totalIngresos - totalGastos,
     pedidosPendientes: pendientes,
     pedidosListos: listos,
   };
