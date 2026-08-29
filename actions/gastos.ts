@@ -3,6 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { CategoriaGasto } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { fromZonedTime } from "date-fns-tz";
+
+const ZONA_HORARIA_BOLIVIA = "America/La_Paz";
 
 const categoriasValidas: CategoriaGasto[] = [
   "INSUMOS",
@@ -11,10 +14,17 @@ const categoriasValidas: CategoriaGasto[] = [
   "VARIOS",
 ];
 
+function convertirFechaBolivia(fecha: string) {
+  return fromZonedTime(`${fecha}T12:00:00`, ZONA_HORARIA_BOLIVIA);
+}
+
 function validarGasto(formData: FormData) {
   const concepto = String(formData.get("concepto") ?? "").trim();
+
   const monto = Number(formData.get("monto") ?? 0);
+
   const categoria = String(formData.get("categoria") ?? "") as CategoriaGasto;
+
   const fecha = String(formData.get("fecha") ?? "");
 
   if (!concepto) {
@@ -29,7 +39,7 @@ function validarGasto(formData: FormData) {
     throw new Error("La categoría seleccionada no es válida.");
   }
 
-  const fechaConvertida = fecha ? new Date(`${fecha}T12:00:00`) : new Date();
+  const fechaConvertida = fecha ? convertirFechaBolivia(fecha) : new Date();
 
   return {
     concepto,
