@@ -24,6 +24,7 @@ interface PedidoCardProps {
     createdAt: Date;
     updatedAt: Date;
   };
+  rol?: "ADMINISTRADOR" | "EMPLEADO";
 }
 
 const siguienteEstado: Record<string, string | null> = {
@@ -39,7 +40,7 @@ const nombreSiguienteEstado: Record<string, string> = {
   LISTO_PARA_ENTREGAR: "Marcar entregado",
 };
 
-export default function PedidoCard({ pedido }: PedidoCardProps) {
+export default function PedidoCard({ pedido, rol }: PedidoCardProps) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
@@ -195,22 +196,23 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
               <Pencil size={17} />
               Editar
             </button>
-
-            <button
-              type="button"
-              onClick={borrarPedido}
-              disabled={deleting || loading}
-              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-50 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {deleting ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <>
-                  <Trash2 size={17} />
-                  Eliminar
-                </>
-              )}
-            </button>
+            {rol === "ADMINISTRADOR" && (
+              <button
+                type="button"
+                onClick={borrarPedido}
+                disabled={deleting || loading}
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-50 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 size={17} />
+                    Eliminar
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </article>

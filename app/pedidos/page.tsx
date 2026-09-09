@@ -1,10 +1,12 @@
 import AppShell from "@/components/layout/AppShell";
 import PedidoCard from "@/components/pedidos/PedidoCard";
 import { prisma } from "@/lib/prisma";
+import { obtenerSesion } from "@/lib/auth";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export default async function PedidosPage() {
+  const sesion = await obtenerSesion();
   const pedidos = await prisma.pedido.findMany({
     orderBy: {
       createdAt: "desc",
@@ -97,7 +99,7 @@ export default async function PedidosPage() {
         ) : (
           <div className="grid gap-4">
             {pedidosFormateados.map((pedido) => (
-              <PedidoCard key={pedido.id} pedido={pedido} />
+              <PedidoCard key={pedido.id} pedido={pedido} rol={sesion?.rol} />
             ))}
           </div>
         )}

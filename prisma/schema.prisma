@@ -29,14 +29,21 @@ enum CategoriaGasto {
   VARIOS
 }
 
-model Usuario {
-  id        String   @id @default(cuid())
-  nombre    String
-  email     String   @unique
-  password  String
+enum RolUsuario {
+  ADMINISTRADOR
+  EMPLEADO
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Usuario {
+  id        String      @id @default(cuid())
+
+  nombre    String
+  usuario   String      @unique
+  password  String
+  rol       RolUsuario  @default(EMPLEADO)
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model Pedido {
