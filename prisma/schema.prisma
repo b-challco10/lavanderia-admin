@@ -7,6 +7,7 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
 enum EstadoPago {
   PAGADO
   PENDIENTE
@@ -39,6 +40,10 @@ model Usuario {
 model Pedido {
   id              String         @id @default(cuid())
 
+  // Los pedidos antiguos pueden no tener número.
+  // Los pedidos nuevos lo tendrán cuando se registre.
+  numeroOrden     String?
+
   nombreCliente   String
   telefonoCliente String?
 
@@ -50,19 +55,22 @@ model Pedido {
   estadoPago      EstadoPago     @default(PENDIENTE)
   estadoServicio  EstadoServicio @default(RECIBIDO)
 
+  fecha           DateTime       @default(now())
+
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
+  @@index([numeroOrden])
   @@index([nombreCliente])
   @@index([telefonoCliente])
   @@index([estadoServicio])
   @@index([estadoPago])
+  @@index([fecha])
   @@index([createdAt])
 }
 
 model Gasto {
   id        String        @id @default(cuid())
-
   concepto  String
   monto     Decimal       @db.Decimal(10, 2)
   categoria CategoriaGasto

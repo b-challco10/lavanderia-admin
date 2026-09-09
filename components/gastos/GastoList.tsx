@@ -43,7 +43,16 @@ const configuracion: Record<
     icon: Droplets,
     className: "bg-cyan-50 text-cyan-600",
   },
-
+  ALQUILER: {
+    label: "Alquiler",
+    icon: Droplets,
+    className: "bg-cyan-50 text-cyan-600",
+  },
+    SUELDOS: {
+    label: "Sueldos",
+    icon: Droplets,
+    className: "bg-cyan-50 text-cyan-600",
+  },
   MANTENIMIENTO: {
     label: "Mantenimiento",
     icon: Wrench,

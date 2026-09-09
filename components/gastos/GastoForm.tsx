@@ -205,9 +205,9 @@ async function handleSubmit(
             <option value="INSUMOS">Insumos</option>
 
             <option value="SERVICIOS_BASICOS">Servicios Básicos</option>
-
+            <option value="ALQUILER">Alquiler</option>
+            <option value="SUELDOS">Sueldos</option>
             <option value="MANTENIMIENTO">Mantenimiento</option>
-
             <option value="VARIOS">Varios</option>
           </select>
         </div>

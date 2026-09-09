@@ -3,12 +3,16 @@
 import { useState } from "react";
 import { Loader2, ArrowRight, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+
 import { actualizarEstadoPedido, eliminarPedido } from "@/actions/pedidos";
+
 import PedidoStatusBadge from "./PedidoStatusBadge";
 import EditPedidoModal from "./EditPedidoModal";
+
 interface PedidoCardProps {
   pedido: {
     id: string;
+    numeroOrden: string | null;
     nombreCliente: string;
     telefonoCliente: string | null;
     detallePrendas: string;
@@ -16,7 +20,9 @@ interface PedidoCardProps {
     montoAdelanto: unknown;
     estadoPago: string;
     estadoServicio: string;
+    fecha: Date;
     createdAt: Date;
+    updatedAt: Date;
   };
 }
 
@@ -37,9 +43,13 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+
   const [deleting, setDeleting] = useState(false);
+
   const [editando, setEditando] = useState(false);
+
   const siguiente = siguienteEstado[pedido.estadoServicio];
+
   async function avanzarEstado() {
     if (!siguiente) return;
 
@@ -60,6 +70,7 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
       setLoading(false);
     }
   }
+
   async function borrarPedido() {
     const confirmar = window.confirm(
       `¿Estás seguro de eliminar el pedido de ${pedido.nombreCliente}?`,
@@ -74,53 +85,35 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
 
       if (!resultado.success) {
         alert(resultado.error || "No se pudo eliminar el pedido.");
-
         return;
       }
 
       router.refresh();
     } catch (error) {
       console.error(error);
-
       alert("Ocurrió un error al eliminar el pedido.");
     } finally {
       setDeleting(false);
     }
   }
+
   return (
     <>
-      <article
-        className="
-      rounded-2xl
-      border
-      border-slate-200
-      bg-white
-      p-5
-      shadow-sm
-    "
-      >
+      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         {/* Cabecera */}
-        <div
-          className="
-        flex
-        flex-col
-        gap-4
-        sm:flex-row
-        sm:items-start
-        sm:justify-between
-      "
-        >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
+            {/* Número de orden */}
             <div className="flex flex-wrap items-center gap-2">
-              <h2
-                className="
-              text-lg
-              font-bold
-              text-slate-800
-            "
-              >
-                {pedido.nombreCliente}
-              </h2>
+              {pedido.numeroOrden !== null ? (
+                <span className="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600">
+                  N°: {pedido.numeroOrden}
+                </span>
+              ) : (
+                <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">
+                  Sin N° de orden
+                </span>
+              )}
 
               <PedidoStatusBadge
                 tipo="servicio"
@@ -128,84 +121,48 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
               />
             </div>
 
+            {/* Cliente */}
+            <h2 className="mt-2 text-lg font-bold text-slate-800">
+              {pedido.nombreCliente}
+            </h2>
+
+            {/* Teléfono */}
             {pedido.telefonoCliente && (
-              <p
-                className="
-              mt-1
-              text-sm
-              text-slate-400
-            "
-              >
+              <p className="mt-1 text-sm text-slate-400">
                 📞 {pedido.telefonoCliente}
               </p>
             )}
+
+            {/* Fecha */}
+            <p className="mt-1 text-xs text-slate-400">
+              Fecha: {new Date(pedido.fecha).toLocaleDateString("es-BO")}
+            </p>
           </div>
 
+          {/* Montos */}
           <div className="text-left sm:text-right">
-            <p
-              className="
-            text-xl
-            font-bold
-            text-slate-800
-          "
-            >
+            <p className="text-xl font-bold text-slate-800">
               Bs {Number(pedido.montoTotal).toFixed(2)}
             </p>
 
-            <p
-              className="
-            mt-1
-            text-xs
-            text-slate-400
-          "
-            >
+            <p className="mt-1 text-xs text-slate-400">
               Adelanto: Bs {Number(pedido.montoAdelanto).toFixed(2)}
             </p>
           </div>
         </div>
 
         {/* Detalle */}
-        <div
-          className="
-        mt-4
-        rounded-xl
-        bg-slate-50
-        p-4
-      "
-        >
+        <div className="mt-4 rounded-xl bg-slate-50 p-4">
           <p className="text-xs font-medium text-slate-400">SERVICIO</p>
 
-          <p
-            className="
-          mt-1
-          text-sm
-          font-medium
-          text-slate-700
-        "
-          >
+          <p className="mt-1 text-sm font-medium text-slate-700">
             {pedido.detallePrendas}
           </p>
         </div>
 
         {/* Footer */}
-        <div
-          className="
-    mt-4
-    flex
-    flex-col
-    gap-3
-  "
-        >
-          <div
-            className="
-      flex
-      flex-col
-      gap-3
-      sm:flex-row
-      sm:items-center
-      sm:justify-between
-    "
-          >
+        <div className="mt-4 flex flex-col gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <PedidoStatusBadge tipo="pago" estado={pedido.estadoPago} />
 
             {siguiente && (
@@ -213,30 +170,13 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
                 type="button"
                 onClick={avanzarEstado}
                 disabled={loading || deleting}
-                className="
-          flex
-          h-11
-          items-center
-          justify-center
-          gap-2
-          rounded-xl
-          bg-blue-600
-          px-5
-          text-sm
-          font-semibold
-          text-white
-          transition
-          hover:bg-blue-700
-          disabled:cursor-not-allowed
-          disabled:opacity-60
-        "
+                className="flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
                   <>
                     {nombreSiguienteEstado[pedido.estadoServicio]}
-
                     <ArrowRight size={17} />
                   </>
                 )}
@@ -244,36 +184,13 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
             )}
           </div>
 
-          <div
-            className="
-      flex
-      gap-3
-      border-t
-      border-slate-100
-      pt-3
-    "
-          >
+          {/* Editar / Eliminar */}
+          <div className="flex gap-3 border-t border-slate-100 pt-3">
             <button
               type="button"
               disabled={deleting || loading}
               onClick={() => setEditando(true)}
-              className="
-    flex
-    h-11
-    flex-1
-    items-center
-    justify-center
-    gap-2
-    rounded-xl
-    border
-    border-slate-200
-    bg-white
-    text-sm
-    font-semibold
-    text-slate-700
-    transition
-    hover:bg-slate-50
-  "
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               <Pencil size={17} />
               Editar
@@ -283,23 +200,7 @@ export default function PedidoCard({ pedido }: PedidoCardProps) {
               type="button"
               onClick={borrarPedido}
               disabled={deleting || loading}
-              className="
-        flex
-        h-11
-        flex-1
-        items-center
-        justify-center
-        gap-2
-        rounded-xl
-        bg-red-50
-        text-sm
-        font-semibold
-        text-red-600
-        transition
-        hover:bg-red-100
-        disabled:cursor-not-allowed
-        disabled:opacity-60
-      "
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-50 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {deleting ? (
                 <Loader2 size={18} className="animate-spin" />

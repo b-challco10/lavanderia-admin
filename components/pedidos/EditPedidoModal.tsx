@@ -9,6 +9,7 @@ import { editarPedido } from "@/actions/pedidos";
 interface EditPedidoModalProps {
   pedido: {
     id: string;
+    numeroOrden: string | null;
     nombreCliente: string;
     telefonoCliente: string | null;
     detallePrendas: string;
@@ -16,11 +17,11 @@ interface EditPedidoModalProps {
     montoAdelanto: unknown;
     estadoPago: string;
     estadoServicio: string;
+    fecha: Date;
+    createdAt: Date;
   };
-
   onClose: () => void;
 }
-
 export default function EditPedidoModal({
   pedido,
   onClose,
@@ -28,7 +29,7 @@ export default function EditPedidoModal({
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-
+  const [numeroOrden, setNumeroOrden] = useState(pedido.numeroOrden ?? "");
   const [nombreCliente, setNombreCliente] = useState(pedido.nombreCliente);
 
   const [telefonoCliente, setTelefonoCliente] = useState(
@@ -37,6 +38,15 @@ export default function EditPedidoModal({
 
   const [detallePrendas, setDetallePrendas] = useState(pedido.detallePrendas);
 
+  const [fecha, setFecha] = useState(() => {
+    const fechaObjeto = new Date(pedido.fecha);
+
+    const año = fechaObjeto.getFullYear();
+    const mes = String(fechaObjeto.getMonth() + 1).padStart(2, "0");
+    const dia = String(fechaObjeto.getDate()).padStart(2, "0");
+
+    return `${año}-${mes}-${dia}`;
+  });
   const [montoTotal, setMontoTotal] = useState(
     Number(pedido.montoTotal).toString(),
   );
@@ -62,7 +72,21 @@ export default function EditPedidoModal({
 
     const total = Number(montoTotal);
     const adelanto = Number(montoAdelanto);
+    const orden = numeroOrden.trim();
 
+    if (!orden) {
+      alert("El número de orden es obligatorio.");
+      return;
+    }
+
+    if (!/^\d+$/.test(orden)) {
+      alert("El número de orden solo puede contener números.");
+      return;
+    }
+    if (!fecha) {
+      alert("La fecha del pedido es obligatoria.");
+      return;
+    }
     if (!nombreCliente.trim()) {
       alert("El nombre del cliente es obligatorio.");
       return;
@@ -93,6 +117,7 @@ export default function EditPedidoModal({
     try {
       const resultado = await editarPedido({
         id: pedido.id,
+        numeroOrden: orden,
         nombreCliente,
         telefonoCliente,
         detallePrendas,
@@ -100,6 +125,7 @@ export default function EditPedidoModal({
         montoAdelanto: adelanto,
         estadoPago,
         estadoServicio,
+        fecha,
       });
 
       if (!resultado.success) {
@@ -179,6 +205,34 @@ export default function EditPedidoModal({
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium text-slate-700">
+                Nro. de orden
+              </label>
+
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={numeroOrden}
+                onChange={(event) =>
+                  setNumeroOrden(event.target.value.replace(/\D/g, ""))
+                }
+                placeholder="Ej. 001120"
+                className="
+      mt-2
+      h-12
+      w-full
+      rounded-xl
+      border
+      border-slate-200
+      px-4
+      outline-none
+      transition
+      focus:border-blue-500
+    "
+              />
+            </div>
             <div>
               <label className="text-sm font-medium text-slate-700">
                 Nombre del cliente

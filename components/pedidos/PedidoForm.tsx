@@ -2,25 +2,56 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
+
 import { crearPedido } from "@/actions/pedidos";
 
 export default function PedidoForm() {
   const router = useRouter();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [error, setError] =
+    useState("");
+
+  function obtenerFechaActual() {
+    const ahora = new Date();
+
+    const año =
+      ahora.getFullYear();
+
+    const mes = String(
+      ahora.getMonth() + 1,
+    ).padStart(2, "0");
+
+    const dia = String(
+      ahora.getDate(),
+    ).padStart(2, "0");
+
+    return `${año}-${mes}-${dia}`;
+  }
+
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     setLoading(true);
     setError("");
 
-    const formData = new FormData(event.currentTarget);
+    const formData =
+      new FormData(
+        event.currentTarget,
+      );
 
     try {
-      await crearPedido(formData);
+      await crearPedido(
+        formData,
+      );
 
       router.push("/pedidos");
     } catch (error) {
@@ -35,13 +66,34 @@ export default function PedidoForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Cliente */}
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
+      {/* Datos del cliente */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-800">
           Datos del cliente
         </h2>
 
+        {/* Número de orden */}
+<div className="mt-4">
+  <label className="mb-2 block text-sm font-medium text-slate-700">
+    Nro. de orden *
+  </label>
+
+  <input
+    name="numeroOrden"
+    type="text"
+    inputMode="numeric"
+    pattern="[0-9]*"
+    required
+    placeholder="Ej. 001120"
+    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+  />
+</div>
+
+        {/* Cliente */}
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -52,28 +104,14 @@ export default function PedidoForm() {
               name="nombreCliente"
               required
               placeholder="Ej. María López"
-              className="
-                h-12
-                w-full
-                rounded-xl
-                border
-                border-slate-200
-                bg-slate-50
-                px-4
-                outline-none
-                transition
-                focus:border-blue-500
-                focus:bg-white
-                focus:ring-2
-                focus:ring-blue-100
-              "
+              className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
-              Teléfono
-              <span className="ml-1 text-xs font-normal text-slate-400">
+              Teléfono{" "}
+              <span className="text-xs font-normal text-slate-400">
                 (opcional)
               </span>
             </label>
@@ -82,21 +120,7 @@ export default function PedidoForm() {
               name="telefonoCliente"
               type="tel"
               placeholder="Ej. 71234567"
-              className="
-                h-12
-                w-full
-                rounded-xl
-                border
-                border-slate-200
-                bg-slate-50
-                px-4
-                outline-none
-                transition
-                focus:border-blue-500
-                focus:bg-white
-                focus:ring-2
-                focus:ring-blue-100
-              "
+              className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
         </div>
@@ -104,11 +128,14 @@ export default function PedidoForm() {
 
       {/* Servicio */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">Servicio</h2>
+        <h2 className="text-lg font-semibold text-slate-800">
+          Servicio
+        </h2>
 
         <div className="mt-4">
           <label className="mb-2 block text-sm font-medium text-slate-700">
-            Detalle de prendas / servicio *
+            Detalle de prendas /
+            servicio *
           </label>
 
           <textarea
@@ -116,21 +143,22 @@ export default function PedidoForm() {
             required
             rows={3}
             placeholder="Ej. 2 edredones grandes"
-            className="
-              w-full
-              resize-none
-              rounded-xl
-              border
-              border-slate-200
-              bg-slate-50
-              p-4
-              outline-none
-              transition
-              focus:border-blue-500
-              focus:bg-white
-              focus:ring-2
-              focus:ring-blue-100
-            "
+            className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-4 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+
+        {/* Fecha */}
+        <div className="mt-4">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Fecha *
+          </label>
+
+          <input
+            name="fecha"
+            type="date"
+            required
+            defaultValue={obtenerFechaActual()}
+            className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
           />
         </div>
       </div>
@@ -154,20 +182,7 @@ export default function PedidoForm() {
               step="0.01"
               required
               placeholder="0.00"
-              className="
-                h-12
-                w-full
-                rounded-xl
-                border
-                border-slate-200
-                bg-slate-50
-                px-4
-                outline-none
-                focus:border-blue-500
-                focus:bg-white
-                focus:ring-2
-                focus:ring-blue-100
-              "
+              className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
 
@@ -183,20 +198,7 @@ export default function PedidoForm() {
               step="0.01"
               defaultValue="0"
               placeholder="0.00"
-              className="
-                h-12
-                w-full
-                rounded-xl
-                border
-                border-slate-200
-                bg-slate-50
-                px-4
-                outline-none
-                focus:border-blue-500
-                focus:bg-white
-                focus:ring-2
-                focus:ring-blue-100
-              "
+              className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
         </div>
@@ -208,25 +210,16 @@ export default function PedidoForm() {
 
           <select
             name="estadoPago"
-            defaultValue="PENDIENTE"
-            className="
-              h-12
-              w-full
-              rounded-xl
-              border
-              border-slate-200
-              bg-slate-50
-              px-4
-              outline-none
-              focus:border-blue-500
-              focus:bg-white
-              focus:ring-2
-              focus:ring-blue-100
-            "
+            defaultValue="PAGADO"
+            className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
           >
-            <option value="PENDIENTE">Pendiente</option>
+            <option value="PENDIENTE">
+              Pendiente
+            </option>
 
-            <option value="PAGADO">Pagado</option>
+            <option value="PAGADO">
+              Pagado
+            </option>
           </select>
         </div>
       </div>
@@ -238,32 +231,18 @@ export default function PedidoForm() {
         </div>
       )}
 
-      {/* Botón */}
+      {/* Registrar */}
       <button
         type="submit"
         disabled={loading}
-        className="
-          flex
-          h-14
-          w-full
-          items-center
-          justify-center
-          gap-2
-          rounded-xl
-          bg-blue-600
-          text-base
-          font-semibold
-          text-white
-          shadow-sm
-          transition
-          hover:bg-blue-700
-          disabled:cursor-not-allowed
-          disabled:opacity-60
-        "
+        className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? (
           <>
-            <Loader2 size={20} className="animate-spin" />
+            <Loader2
+              size={20}
+              className="animate-spin"
+            />
             Registrando...
           </>
         ) : (
