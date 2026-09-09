@@ -4,14 +4,18 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
-
 export default async function PedidosPage() {
-  const pedidos =
-    await prisma.pedido.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+  const pedidos = await prisma.pedido.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const pedidosFormateados = pedidos.map((pedido) => ({
+    ...pedido,
+    montoTotal: Number(pedido.montoTotal),
+    montoAdelanto: Number(pedido.montoAdelanto),
+  }));
 
   return (
     <AppShell>
@@ -28,9 +32,7 @@ export default async function PedidosPage() {
           "
         >
           <div>
-            <p className="text-sm font-medium text-blue-600">
-              Operaciones
-            </p>
+            <p className="text-sm font-medium text-blue-600">Operaciones</p>
 
             <h1
               className="
@@ -94,11 +96,8 @@ export default async function PedidosPage() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {pedidos.map((pedido) => (
-              <PedidoCard
-                key={pedido.id}
-                pedido={pedido}
-              />
+            {pedidosFormateados.map((pedido) => (
+              <PedidoCard key={pedido.id} pedido={pedido} />
             ))}
           </div>
         )}

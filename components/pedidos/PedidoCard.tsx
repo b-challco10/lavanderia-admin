@@ -16,8 +16,8 @@ interface PedidoCardProps {
     nombreCliente: string;
     telefonoCliente: string | null;
     detallePrendas: string;
-    montoTotal: unknown;
-    montoAdelanto: unknown;
+    montoTotal: number;
+    montoAdelanto: number;
     estadoPago: string;
     estadoServicio: string;
     fecha: Date;
