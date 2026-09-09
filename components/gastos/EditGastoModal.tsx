@@ -8,7 +8,7 @@ import { actualizarGasto } from "@/actions/gastos";
 interface Gasto {
   id: string;
   concepto: string;
-  monto: unknown;
+  monto: number;
   categoria: string;
   fecha: Date;
 }
@@ -35,12 +35,10 @@ export default function EditGastoModal({
   useEffect(() => {
     if (!gasto) return;
 
-    const fechaFormateada = new Date(gasto.fecha)
-      .toISOString()
-      .split("T")[0];
+    const fechaFormateada = new Date(gasto.fecha).toISOString().split("T")[0];
 
     setConcepto(gasto.concepto);
-    setMonto(String(Number(gasto.monto)));
+    setMonto(String(gasto.monto));
     setCategoria(gasto.categoria);
     setFecha(fechaFormateada);
     setError("");
@@ -50,36 +48,36 @@ export default function EditGastoModal({
     return null;
   }
 
-async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-  event.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-  // Validación para asegurar que gasto existe
-  if (!gasto) return;
+    // Validación para asegurar que gasto existe
+    if (!gasto) return;
 
-  setLoading(true);
-  setError("");
+    setLoading(true);
+    setError("");
 
-  const formData = new FormData();
-  formData.append("concepto", concepto);
-  formData.append("monto", monto);
-  formData.append("categoria", categoria);
-  formData.append("fecha", fecha);
+    const formData = new FormData();
+    formData.append("concepto", concepto);
+    formData.append("monto", monto);
+    formData.append("categoria", categoria);
+    formData.append("fecha", fecha);
 
-  try {
-    await actualizarGasto(gasto.id, formData); // TypeScript ya no marcará error aquí
+    try {
+      await actualizarGasto(gasto.id, formData); // TypeScript ya no marcará error aquí
 
-    onClose();
-    router.refresh();
-  } catch (error) {
-    setError(
-      error instanceof Error
-        ? error.message
-        : "No se pudo actualizar el gasto.",
-    );
-  } finally {
-    setLoading(false);
+      onClose();
+      router.refresh();
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo actualizar el gasto.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
   return (
     <div
@@ -152,9 +150,7 @@ async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 
             <input
               value={concepto}
-              onChange={(event) =>
-                setConcepto(event.target.value)
-              }
+              onChange={(event) => setConcepto(event.target.value)}
               required
               className="
                 h-12
@@ -185,9 +181,7 @@ async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
               min="0.01"
               step="0.01"
               value={monto}
-              onChange={(event) =>
-                setMonto(event.target.value)
-              }
+              onChange={(event) => setMonto(event.target.value)}
               required
               className="
                 h-12
@@ -215,9 +209,7 @@ async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 
             <select
               value={categoria}
-              onChange={(event) =>
-                setCategoria(event.target.value)
-              }
+              onChange={(event) => setCategoria(event.target.value)}
               className="
                 h-12
                 w-full
@@ -234,12 +226,15 @@ async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
               "
             >
               <option value="INSUMOS">Insumos</option>
-              <option value="SERVICIOS_BASICOS">
-                Servicios Básicos
-              </option>
-              <option value="MANTENIMIENTO">
-                Mantenimiento
-              </option>
+
+              <option value="SERVICIOS_BASICOS">Servicios Básicos</option>
+
+              <option value="ALQUILER">Alquiler</option>
+
+              <option value="SUELDOS">Sueldos</option>
+
+              <option value="MANTENIMIENTO">Mantenimiento</option>
+
               <option value="VARIOS">Varios</option>
             </select>
           </div>
@@ -253,9 +248,7 @@ async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
             <input
               type="date"
               value={fecha}
-              onChange={(event) =>
-                setFecha(event.target.value)
-              }
+              onChange={(event) => setFecha(event.target.value)}
               className="
                 h-12
                 w-full
@@ -344,10 +337,7 @@ async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
             >
               {loading ? (
                 <>
-                  <Loader2
-                    size={18}
-                    className="animate-spin"
-                  />
+                  <Loader2 size={18} className="animate-spin" />
                   Guardando...
                 </>
               ) : (

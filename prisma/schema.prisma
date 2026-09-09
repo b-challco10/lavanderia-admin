@@ -23,6 +23,8 @@ enum EstadoServicio {
 enum CategoriaGasto {
   INSUMOS
   SERVICIOS_BASICOS
+  ALQUILER
+  SUELDOS
   MANTENIMIENTO
   VARIOS
 }

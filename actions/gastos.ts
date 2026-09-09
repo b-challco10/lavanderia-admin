@@ -3,28 +3,26 @@
 import { prisma } from "@/lib/prisma";
 import { CategoriaGasto } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { fromZonedTime } from "date-fns-tz";
-
-const ZONA_HORARIA_BOLIVIA = "America/La_Paz";
 
 const categoriasValidas: CategoriaGasto[] = [
   "INSUMOS",
   "SERVICIOS_BASICOS",
+  "ALQUILER",
+  "SUELDOS",
   "MANTENIMIENTO",
   "VARIOS",
 ];
 
-function convertirFechaBolivia(fecha: string) {
-  return fromZonedTime(`${fecha}T12:00:00`, ZONA_HORARIA_BOLIVIA);
+function convertirFecha(fecha: string) {
+  return new Date(`${fecha}T12:00:00`);
 }
 
 function validarGasto(formData: FormData) {
   const concepto = String(formData.get("concepto") ?? "").trim();
-
   const monto = Number(formData.get("monto") ?? 0);
-
-  const categoria = String(formData.get("categoria") ?? "") as CategoriaGasto;
-
+  const categoria = String(
+    formData.get("categoria") ?? "",
+  ) as CategoriaGasto;
   const fecha = String(formData.get("fecha") ?? "");
 
   if (!concepto) {
@@ -39,7 +37,15 @@ function validarGasto(formData: FormData) {
     throw new Error("La categoría seleccionada no es válida.");
   }
 
-  const fechaConvertida = fecha ? convertirFechaBolivia(fecha) : new Date();
+  if (!fecha) {
+    throw new Error("La fecha es obligatoria.");
+  }
+
+  const fechaConvertida = convertirFecha(fecha);
+
+  if (Number.isNaN(fechaConvertida.getTime())) {
+    throw new Error("La fecha no es válida.");
+  }
 
   return {
     concepto,
@@ -66,7 +72,10 @@ export async function crearGasto(formData: FormData) {
   };
 }
 
-export async function actualizarGasto(id: string, formData: FormData) {
+export async function actualizarGasto(
+  id: string,
+  formData: FormData,
+) {
   const datos = validarGasto(formData);
 
   const gastoExistente = await prisma.gasto.findUnique({

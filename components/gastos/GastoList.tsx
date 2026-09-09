@@ -10,6 +10,8 @@ import {
   Pencil,
   Trash2,
   Loader2,
+  Home,
+  Users,
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -19,7 +21,7 @@ import { eliminarGasto } from "@/actions/gastos";
 interface Gasto {
   id: string;
   concepto: string;
-  monto: unknown;
+  monto: number;
   categoria: string;
   fecha: Date;
 }
@@ -45,13 +47,14 @@ const configuracion: Record<
   },
   ALQUILER: {
     label: "Alquiler",
-    icon: Droplets,
-    className: "bg-cyan-50 text-cyan-600",
+    icon: Home,
+    className: "bg-purple-50 text-purple-600",
   },
-    SUELDOS: {
+
+  SUELDOS: {
     label: "Sueldos",
-    icon: Droplets,
-    className: "bg-cyan-50 text-cyan-600",
+    icon: Users,
+    className: "bg-green-50 text-green-600",
   },
   MANTENIMIENTO: {
     label: "Mantenimiento",
@@ -306,9 +309,9 @@ export default function GastoList({ gastos }: { gastos: Gasto[] }) {
       {/* Aquí conectaremos el modal de edición en el siguiente paso */}
 
       <EditGastoModal
-  gasto={gastoEditando}
-  onClose={() => setGastoEditando(null)}
-/>
+        gasto={gastoEditando}
+        onClose={() => setGastoEditando(null)}
+      />
     </>
   );
 }

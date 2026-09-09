@@ -6,10 +6,14 @@ export const dynamic = "force-dynamic";
 export default async function GastosPage() {
   const gastos = await prisma.gasto.findMany({
     orderBy: {
-      createdAt: "desc",
+      fecha: "desc",
     },
   });
 
+  const gastosFormateados = gastos.map((gasto) => ({
+    ...gasto,
+    monto: Number(gasto.monto),
+  }));
   return (
     <AppShell>
       <div className="space-y-6">
@@ -63,7 +67,7 @@ export default async function GastosPage() {
             Gastos registrados
           </h2>
 
-          <GastoList gastos={gastos} />
+          <GastoList gastos={gastosFormateados} />
         </div>
       </div>
     </AppShell>
