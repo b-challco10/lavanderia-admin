@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { EstadoPago, EstadoServicio } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-
+import { obtenerSesion } from "@/lib/auth";
 export async function crearPedido(formData: FormData) {
 const numeroOrden = String(
   formData.get("numeroOrden") ?? "",
@@ -100,7 +100,15 @@ if (!/^\d+$/.test(numeroOrden)) {
       "La fecha del pedido no es válida.",
     );
   }
+const sesion = await obtenerSesion();
 
+if (!sesion) {
+  throw new Error("No hay una sesión activa.");
+}
+
+if (!sesion.sucursalId) {
+  throw new Error("No hay una sucursal seleccionada.");
+}
 const pedido = await prisma.pedido.create({
   data: {
     numeroOrden,
@@ -111,6 +119,12 @@ const pedido = await prisma.pedido.create({
     montoAdelanto,
     estadoPago,
     fecha: fechaConvertida,
+
+    sucursal: {
+      connect: {
+        id: sesion.sucursalId,
+      },
+    },
   },
 });
 

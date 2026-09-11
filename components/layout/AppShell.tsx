@@ -1,22 +1,39 @@
 import { ReactNode } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, MapPin } from "lucide-react";
 import Image from "next/image";
 import AppSidebar from "./AppSidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import { cerrarSesionAction } from "@/actions/cerrar-sesion";
-
+import { obtenerSesion } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 interface AppShellProps {
   children: ReactNode;
 }
 
-export default function AppShell({
+export default async function AppShell({
   children,
 }: AppShellProps) {
+  const sesion = await obtenerSesion();
+
+  let nombreSucursal = "";
+
+  if (sesion?.sucursalId) {
+    const sucursal = await prisma.sucursal.findUnique({
+      where: {
+        id: sesion.sucursalId,
+      },
+      select: {
+        nombre: true,
+      },
+    });
+
+    nombreSucursal = sucursal?.nombre ?? "";
+  }
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
 
       {/* Sidebar Desktop */}
-      <AppSidebar />
+      <AppSidebar nombreSucursal={nombreSucursal} />
 
       {/* Barra superior Mobile */}
 <div className="sticky top-0 z-40 flex h-[68px] items-center justify-between border-b border-white/10 bg-transparent px-4 shadow-sm backdrop-blur md:hidden">
@@ -38,6 +55,15 @@ export default function AppShell({
     <span className="mt-1 text-[9px] font-semibold tracking-[0.28em] text-blue-600">
       BURBUJAS
     </span>
+
+    {nombreSucursal && (
+      <div className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-slate-500">
+        <MapPin size={11} />
+        <span className="max-w-[130px] truncate">
+          {nombreSucursal}
+        </span>
+      </div>
+    )}
   </div>
 </div>
 

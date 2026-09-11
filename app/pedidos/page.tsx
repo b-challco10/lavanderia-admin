@@ -3,11 +3,25 @@ import PedidoCard from "@/components/pedidos/PedidoCard";
 import { prisma } from "@/lib/prisma";
 import { obtenerSesion } from "@/lib/auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
+
 export default async function PedidosPage() {
   const sesion = await obtenerSesion();
+
+  if (!sesion) {
+    redirect("/login");
+  }
+
+  if (!sesion.sucursalId) {
+    redirect("/seleccionar-sucursal");
+  }
+
   const pedidos = await prisma.pedido.findMany({
+    where: {
+      sucursalId: sesion.sucursalId,
+    },
     orderBy: {
       createdAt: "desc",
     },

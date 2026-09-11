@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-
+import { obtenerSesion } from "@/lib/auth";
 export type PeriodoDashboard = "HOY" | "SEMANA" | "MES";
 
 function obtenerRango(periodo: PeriodoDashboard) {
@@ -34,6 +34,16 @@ function obtenerRango(periodo: PeriodoDashboard) {
 }
 
 export async function obtenerDashboard(periodo: PeriodoDashboard) {
+  const sesion = await obtenerSesion();
+
+  if (!sesion) {
+    throw new Error("No hay una sesión activa.");
+  }
+
+  if (!sesion.sucursalId) {
+    throw new Error("No hay una sucursal seleccionada.");
+  }
+
   const { inicio, fin } = obtenerRango(periodo);
 
   const rangoCreacion = {
@@ -50,32 +60,38 @@ export async function obtenerDashboard(periodo: PeriodoDashboard) {
     },
   };
 
-  const [ingresos, gastos, pedidosPorEstado] =
-    await Promise.all([
-      prisma.pedido.aggregate({
-        _sum: {
-          montoTotal: true,
-        },
-        where: rangoCreacion,
-      }),
+const [ingresos, gastos, pedidosPorEstado] = await Promise.all([
+  prisma.pedido.aggregate({
+    _sum: {
+      montoTotal: true,
+    },
+    where: {
+      ...rangoCreacion,
+      sucursalId: sesion.sucursalId,
+    },
+  }),
 
-      prisma.gasto.aggregate({
-        _sum: {
-          monto: true,
-        },
-        where: rangoGasto,
-      }),
+  prisma.gasto.aggregate({
+    _sum: {
+      monto: true,
+    },
+    where: {
+      ...rangoGasto,
+      sucursalId: sesion.sucursalId,
+    },
+  }),
 
-      prisma.pedido.groupBy({
-        by: ["estadoServicio"],
-
-        _count: {
-          id: true,
-        },
-
-        where: rangoCreacion,
-      }),
-    ]);
+  prisma.pedido.groupBy({
+    by: ["estadoServicio"],
+    _count: {
+      id: true,
+    },
+    where: {
+      ...rangoCreacion,
+      sucursalId: sesion.sucursalId,
+    },
+  }),
+]);
 
   const totalIngresos = Number(
     ingresos._sum.montoTotal ?? 0,

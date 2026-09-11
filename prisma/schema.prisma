@@ -34,28 +34,35 @@ enum RolUsuario {
   EMPLEADO
 }
 
+model Sucursal {
+  id        String   @id @default(cuid())
+  nombre    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pedidos Pedido[]
+  gastos  Gasto[]
+}
+
 model Usuario {
-  id        String      @id @default(cuid())
+  id        String     @id @default(cuid())
 
   nombre    String
-  usuario   String      @unique
+  usuario   String     @unique
   password  String
-  rol       RolUsuario  @default(EMPLEADO)
+  rol       RolUsuario @default(EMPLEADO)
 
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model Pedido {
   id              String         @id @default(cuid())
 
-  // Los pedidos antiguos pueden no tener número.
-  // Los pedidos nuevos lo tendrán cuando se registre.
   numeroOrden     String?
 
   nombreCliente   String
   telefonoCliente String?
-
   detallePrendas  String
 
   montoTotal      Decimal        @db.Decimal(10, 2)
@@ -65,6 +72,9 @@ model Pedido {
   estadoServicio  EstadoServicio @default(RECIBIDO)
 
   fecha           DateTime       @default(now())
+
+  sucursalId      String
+  sucursal        Sucursal       @relation(fields: [sucursalId], references: [id])
 
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -79,14 +89,17 @@ model Pedido {
 }
 
 model Gasto {
-  id        String        @id @default(cuid())
-  concepto  String
-  monto     Decimal       @db.Decimal(10, 2)
-  categoria CategoriaGasto
-  fecha     DateTime      @default(now())
+  id          String        @id @default(cuid())
+  concepto    String
+  monto       Decimal       @db.Decimal(10, 2)
+  categoria   CategoriaGasto
+  fecha       DateTime      @default(now())
 
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  sucursalId  String
+  sucursal    Sucursal      @relation(fields: [sucursalId], references: [id])
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@index([fecha])
   @@index([categoria])

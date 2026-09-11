@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
+if (!process.env.AUTH_SECRET) {
+  throw new Error("AUTH_SECRET no está configurado.");
+}
+
 const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET);
 
 const rutasProtegidas = [
@@ -15,7 +19,8 @@ export async function proxy(request: NextRequest) {
 
   const necesitaLogin = rutasProtegidas.some(
     (ruta) =>
-      pathname === ruta || pathname.startsWith(`${ruta}/`),
+      pathname === ruta ||
+      pathname.startsWith(`${ruta}/`),
   );
 
   if (!necesitaLogin) {
@@ -34,6 +39,7 @@ export async function proxy(request: NextRequest) {
     const { payload } = await jwtVerify(token, SECRET);
 
     const rol = payload.rol;
+    const sucursalId = payload.sucursalId;
 
     if (
       rol !== "ADMINISTRADOR" &&
@@ -41,6 +47,13 @@ export async function proxy(request: NextRequest) {
     ) {
       return NextResponse.redirect(
         new URL("/login", request.url),
+      );
+    }
+
+    // Si todavía no seleccionó una sucursal
+    if (typeof sucursalId !== "string") {
+      return NextResponse.redirect(
+        new URL("/seleccionar-sucursal", request.url),
       );
     }
 

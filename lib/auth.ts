@@ -1,21 +1,23 @@
 import { cookies } from "next/headers";
 import { jwtVerify, SignJWT } from "jose";
 
-const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET);
-
 if (!process.env.AUTH_SECRET) {
   throw new Error("AUTH_SECRET no está configurado.");
 }
+
+const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET);
 
 export type RolUsuario = "ADMINISTRADOR" | "EMPLEADO";
 
 export async function crearSesion(
   usuarioId: string,
   rol: RolUsuario,
+  sucursalId?: string,
 ) {
   const token = await new SignJWT({
     usuarioId,
     rol,
+    sucursalId,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -55,6 +57,10 @@ export async function obtenerSesion() {
     return {
       usuarioId: payload.usuarioId,
       rol: payload.rol as RolUsuario,
+      sucursalId:
+        typeof payload.sucursalId === "string"
+          ? payload.sucursalId
+          : null,
     };
   } catch {
     return null;

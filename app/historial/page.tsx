@@ -2,16 +2,33 @@ import AppShell from "@/components/layout/AppShell";
 import HistorialClient from "@/components/historial/HistorialClient";
 import ExportExcelButtons from "@/components/historial/ExportExcelButtons";
 import { prisma } from "@/lib/prisma";
-
+import { obtenerSesion } from "@/lib/auth";
+import { redirect } from "next/navigation";
 export default async function HistorialPage() {
+  const sesion = await obtenerSesion();
+
+  if (!sesion) {
+    redirect("/login");
+  }
+
+  if (!sesion.sucursalId) {
+    redirect("/seleccionar-sucursal");
+  }
+
   const [pedidos, gastos] = await Promise.all([
     prisma.pedido.findMany({
+      where: {
+        sucursalId: sesion.sucursalId,
+      },
       orderBy: {
         createdAt: "desc",
       },
     }),
 
     prisma.gasto.findMany({
+      where: {
+        sucursalId: sesion.sucursalId,
+      },
       orderBy: {
         fecha: "desc",
       },

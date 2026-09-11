@@ -2,9 +2,24 @@ import AppShell from "@/components/layout/AppShell";
 import GastoForm from "@/components/gastos/GastoForm";
 import GastoList from "@/components/gastos/GastoList";
 import { prisma } from "@/lib/prisma";
+import { obtenerSesion } from "@/lib/auth";
+import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 export default async function GastosPage() {
+  const sesion = await obtenerSesion();
+
+  if (!sesion) {
+    redirect("/login");
+  }
+
+  if (!sesion.sucursalId) {
+    redirect("/seleccionar-sucursal");
+  }
+
   const gastos = await prisma.gasto.findMany({
+    where: {
+      sucursalId: sesion.sucursalId,
+    },
     orderBy: {
       fecha: "desc",
     },

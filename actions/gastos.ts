@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CategoriaGasto } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-
+import { obtenerSesion } from "@/lib/auth";
 const categoriasValidas: CategoriaGasto[] = [
   "INSUMOS",
   "SERVICIOS_BASICOS",
@@ -58,18 +58,32 @@ function validarGasto(formData: FormData) {
 export async function crearGasto(formData: FormData) {
   const datos = validarGasto(formData);
 
+  const sesion = await obtenerSesion();
+
+  if (!sesion) {
+    throw new Error("No hay una sesión activa.");
+  }
+
+  if (!sesion.sucursalId) {
+    throw new Error("No hay una sucursal seleccionada.");
+  }
+
   const gasto = await prisma.gasto.create({
-    data: datos,
+    data: {
+      ...datos,
+      sucursal: {
+        connect: {
+          id: sesion.sucursalId,
+        },
+      },
+    },
   });
 
   revalidatePath("/gastos");
   revalidatePath("/dashboard");
   revalidatePath("/historial");
 
-  return {
-    success: true,
-    id: gasto.id,
-  };
+  return { success: true, id: gasto.id };
 }
 
 export async function actualizarGasto(

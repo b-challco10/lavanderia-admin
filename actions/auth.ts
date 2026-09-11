@@ -6,7 +6,10 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { crearSesion } from "@/lib/auth";
 
-export async function iniciarSesion(usuario: string, password: string) {
+export async function iniciarSesion(
+  usuario: string,
+  password: string,
+) {
   const usuarioLimpio = usuario.trim();
 
   if (!usuarioLimpio || !password) {
@@ -41,11 +44,11 @@ export async function iniciarSesion(usuario: string, password: string) {
     };
   }
 
-  await crearSesion(usuarioEncontrado.id, usuarioEncontrado.rol);
+  // Se crea la sesión sin sucursal seleccionada todavía.
+  await crearSesion(
+    usuarioEncontrado.id,
+    usuarioEncontrado.rol,
+  );
 
-  if (usuarioEncontrado.rol === "ADMINISTRADOR") {
-    redirect("/dashboard");
-  }
-
-  redirect("/pedidos");
+  redirect("/seleccionar-sucursal");
 }
